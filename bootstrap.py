@@ -2,37 +2,34 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 import multiprocessing
 from functools import partial
+from distributions import sample_mix
+import pandas as pd
 
 
-def bootstrap(X_train, y_train, X_test, y_test, X_for_corruption, y_for_corruption, prob_additional_corruption, nx_boot, n_processes=1):
+def bootstrap(distribution, train_partitions, test_partitions, probabilities_artificial_corruption, nx_boot,
+              number_processes=1):
     """
     Bootstrapped train/testing
-    :param X_train: Array of [nsamples x nfeatures]. May include categorical fields
-    :param y_train: Vector of labels
-    :param X_test: Array of [nsamples x nfeatures]. May include categorical fields
-    :param y_test: Vector of labels
-    :param X_for_corruption: Array of [nsamples x nfeatures]. May include categorical fields
-    :param y_for_corruption: Vector of labels
-    :param prob_additional_corruption: Probability of adding additional corruption
+    :param distribution: Object with sample(n, partitions) method
+    :param train_partitions: List of partitions in the true train set
+    :param test_partitions: List of partitions in the true test set
+    :param probabilities_artificial_corruption: Probability of adding additional corruption
     :param nx_boot: Number of samples to take in bootstrap
+    :param number_processes: Number of processes to use
     :return b: Observed mean error vector, ncorruption x 1
     :return B: Observed error PDF's, array ncorruptions x nbins
     """
-    pool = multiprocessing.Pool(n_processes)
+    pool = multiprocessing.Pool(number_processes)
     n_bins = 25
 
-    A_hat = np.empty((len(prob_additional_corruption), nx_boot + 1))
-    b = np.empty(len(prob_additional_corruption))
-    B = np.empty((len(prob_additional_corruption), n_bins))
+    A_hat = np.empty((len(probabilities_artificial_corruption), nx_boot + 1))
+    b = np.empty(len(probabilities_artificial_corruption))
+    B = np.empty((len(probabilities_artificial_corruption), n_bins))
     x_hat = np.zeros(nx_boot + 1)
 
-    X_train_corrupted = np.vstack((X_train, X_for_corruption))
-    y_train_corrupted = np.hstack((y_train, y_for_corruption))
-    [n_train, _] = X_train.shape
-    [n_for_corruption, _] = X_for_corruption.shape
-
-    function = partial(bootstrap_fixed_corruption, X_train_corrupted=X_train_corrupted, y_train_corrupted=y_train_corrupted, X_test=X_test, y_test=y_test, nx_boot=nx_boot, n_for_corruption=n_for_corruption, n_train=n_train, n_bins=n_bins)
-    result = pool.map(function, prob_additional_corruption)
+    function = partial(bootstrap_fixed_corruption, distribution=distribution, train_partitions=train_partitions,
+                       test_partitions=test_partitions, samples_in_bootstrap=nx_boot, n_bins=n_bins)
+    result = [function(x) for x in probabilities_artificial_corruption]  # pool.map(function, probabilities_artificial_corruption)
     for i, r in enumerate(result):
         b[i] = r[0]
         B[i, ] = r[1]
@@ -44,25 +41,34 @@ def bootstrap(X_train, y_train, X_test, y_test, X_for_corruption, y_for_corrupti
     return b, B, A_hat, x_hat
 
 
-def bootstrap_fixed_corruption(corruption, X_train_corrupted, y_train_corrupted, X_test, y_test, nx_boot, n_for_corruption, n_train, n_bins):
+def bootstrap_fixed_corruption(probability_artificial_corruption, distribution, train_partitions, test_partitions, samples_in_bootstrap, n_bins):
     """
-
+    TODO
     :return:
     """
-    boots = 2000
-    a_hat = np.zeros(nx_boot+1)
-    x_hat = np.zeros(nx_boot+1)
+    sampler_train = partial(distribution.sample, partitions=train_partitions)
+    sampler_test = partial(distribution.sample, partitions=test_partitions)
+    sampler_with_artificial_corruption = partial(sample_mix, samplers=[sampler_train, sampler_test],
+                                                 probabilities=[1.0-probability_artificial_corruption,
+                                                                probability_artificial_corruption])
+    boots = 100
+    a_hat = np.zeros(samples_in_bootstrap + 1)
+    x_hat = np.zeros(samples_in_bootstrap + 1)
     classifier = KNeighborsClassifier()
     errors = []
-    p_vector = np.hstack(
-        (np.full(n_train, (1.0 - corruption) / n_train), np.full(n_for_corruption, corruption / n_for_corruption)))
+
     for j in range(0, boots):
-        ind_train_boot = np.random.choice(n_train + n_for_corruption, size=nx_boot, replace=True, p=p_vector)
-        s = np.sum(ind_train_boot >= n_train)
+        # Sample data
+        samples_train, n_d = sampler_with_artificial_corruption(n=samples_in_bootstrap)
+        s = n_d[1]
         a_hat[s] += 1
-        X_train_boot = X_train_corrupted[ind_train_boot, :]
-        y_train_boot = y_train_corrupted[ind_train_boot]
-        classifier.fit(X_train_boot, y_train_boot)
+        X_train = pd.concat([samples_train['numerical'], pd.get_dummies(samples_train['categorical'], prefix='cat_')], axis=1)
+        y_train = samples_train['label']
+        classifier.fit(X_train, y_train)
+
+        samples_test = sampler_test(1000)
+        X_test = pd.concat([samples_test['numerical'], pd.get_dummies(samples_test['categorical'], prefix='cat_')], axis=1)
+        y_test = samples_test['label']
         error = 1 - classifier.score(X_test, y_test)
         errors.append(error)
         x_hat[s] += error

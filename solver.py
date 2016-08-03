@@ -3,17 +3,16 @@ import numpy as np
 import cvxpy
 
 
-def solve_means(b, prob_add_corruption, n_train, s, nx_boot):
+def solve_means(b, probabilities_artifical_corruption, probability_natural_corruption, nx_boot):
     """
     Estimate the true error means in LOCCO
     :param b: Observed error means [delta_s.size x 1]
-    :param prob_add_corruption: Vector of probability of additional corruption added to training set
-    :param n: Number of training + additional corruption samples
-    :param s: Number of corrupted samples in the original train set
+    :param probabilities_artifical_corruption: Vector of probability of additional corruption added to training set
+    :param probability_natural_corruption: Probability of sampling a corrupted sample in the training set
     :param nx_boot: Number of samples taken (with replacement) from train set (with natural and artifical corruption)
     :return x: Vector of estimated mean errors, [delta_s.size + s  x  1]
     """
-    A = np.array([binom.pmf(range(0, nx_boot), nx_boot, (1-p)*float(s)/n_train + p) for p in prob_add_corruption])
+    A = np.array([binom.pmf(range(0, nx_boot), nx_boot, (1-p)*probability_natural_corruption + p) for p in probabilities_artifical_corruption])
     x = cvxpy.Variable(nx_boot)
     obj = cvxpy.Minimize(cvxpy.norm(A * x - b))
 
@@ -25,7 +24,7 @@ def solve_means(b, prob_add_corruption, n_train, s, nx_boot):
                    x[0] <= 1,
                    off_diagonal*x <= diagonal*x]
     prob = cvxpy.Problem(obj, constraints)
-    prob.solve()
+    prob.solve(verbose=True, reltol=1e-10)
     print "status:", prob.status
     print "optimal value", prob.value
 
