@@ -29,7 +29,7 @@ def bootstrap(distribution, train_partitions, test_partitions, probabilities_art
 
     function = partial(bootstrap_fixed_corruption, distribution=distribution, train_partitions=train_partitions,
                        test_partitions=test_partitions, samples_in_bootstrap=nx_boot, n_bins=n_bins)
-    result = [function(x) for x in probabilities_artificial_corruption]  # pool.map(function, probabilities_artificial_corruption)
+    result = pool.map(function, probabilities_artificial_corruption)
     for i, r in enumerate(result):
         b[i] = r[0]
         B[i, ] = r[1]
@@ -41,7 +41,8 @@ def bootstrap(distribution, train_partitions, test_partitions, probabilities_art
     return b, B, A_hat, x_hat
 
 
-def bootstrap_fixed_corruption(probability_artificial_corruption, distribution, train_partitions, test_partitions, samples_in_bootstrap, n_bins):
+def bootstrap_fixed_corruption(probability_artificial_corruption, distribution, train_partitions, test_partitions,
+                               samples_in_bootstrap, n_bins):
     """
     TODO
     :return:
@@ -51,7 +52,7 @@ def bootstrap_fixed_corruption(probability_artificial_corruption, distribution, 
     sampler_with_artificial_corruption = partial(sample_mix, samplers=[sampler_train, sampler_test],
                                                  probabilities=[1.0-probability_artificial_corruption,
                                                                 probability_artificial_corruption])
-    boots = 100
+    boots = 10000
     a_hat = np.zeros(samples_in_bootstrap + 1)
     x_hat = np.zeros(samples_in_bootstrap + 1)
     classifier = KNeighborsClassifier()

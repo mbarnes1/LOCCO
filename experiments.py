@@ -12,12 +12,14 @@ def simple():
     Simple example with synthetic data, 1 real value + 1 categorical value
     :return:
     """
+
     # User Defined Parameters #
     number_partitions = 10
-    partition_corruption_probability = 0.05
     categorical_corruption_probability = 0.2
     min_prob_sampling_zero_corruption = 0.2
-    number_processes = 4
+    number_processes = 50
+    nx_boot = 50  # int(np.log(min_prob_sampling_zero_corruption)/np.log(float(n_train - s)/n_train))
+    probabilities_artificial_corruption = np.linspace(start=0.02, stop=0.3, num=nx_boot)
 
     # Synthetic Data #
     distribution = Simple(number_partitions=number_partitions,
@@ -27,9 +29,7 @@ def simple():
     test_partitions = np.array(list(set(partitions).difference(set(train_partitions))))
 
     # Bootstrapping #
-    nx_boot = 50  # int(np.log(min_prob_sampling_zero_corruption)/np.log(float(n_train - s)/n_train))
     print 'Bootstrapping with ', nx_boot, ' samples'
-    probabilities_artificial_corruption = np.linspace(start=0.05, stop=0.3, num=nx_boot)
     s = 0
     [b, B, A_hat, x_hat] = bootstrap(distribution, train_partitions=train_partitions, test_partitions=test_partitions,
                                      probabilities_artificial_corruption=probabilities_artificial_corruption, nx_boot=nx_boot,
@@ -39,8 +39,8 @@ def simple():
 
     # Solve for uncorrupted error #
     probability_natural_corruption = 0.0
-    pickle.dump([b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat], open('bootstrap.p', 'wb'))
-    #[b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat] = pickle.load(open('bootstrap.p', 'rb'))
+    #pickle.dump([b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat], open('bootstrap.p', 'wb'))
+    [b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat] = pickle.load(open('bootstrap.p', 'rb'))
     x_hat = np.nan_to_num(x_hat)
     print 'Observed mean errors', b
     print 'True mean error', orig
