@@ -39,8 +39,8 @@ def simple():
 
     # Solve for uncorrupted error #
     probability_natural_corruption = 0.0
-    #pickle.dump([b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat], open('bootstrap.p', 'wb'))
-    [b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat] = pickle.load(open('bootstrap.p', 'rb'))
+    pickle.dump([b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat], open('bootstrap.p', 'wb'))
+    #[b, probabilities_artificial_corruption, probability_natural_corruption, orig, nx_boot, A_hat, x_hat] = pickle.load(open('bootstrap.p', 'rb'))
     x_hat = np.nan_to_num(x_hat)
     print 'Observed mean errors', b
     print 'True mean error', orig
