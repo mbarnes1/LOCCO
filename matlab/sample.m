@@ -1,8 +1,9 @@
 clear, clc, close all
 
 % Params
-savestep = 10000;
+savestep = 100;
 steps = 20;
+nprocesses = 2;
 K = savestep*steps;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
 p_clean_resample = 0.2; % Probability of resampling zero corrupted samples
@@ -18,11 +19,13 @@ f = sampler(m0, m1, sigma0, sigma1);
 
 p = linspace(p0, 1, 2*nT);
 A = NaN(length(p), nT+1);
-B = zeros(length(p), steps);
+B = NaN(length(p), steps);
 b = zeros(length(p), 1);
 
-for i = 1:length(p)
+parpool(nprocesses);
+parfor i = 1:length(p)
     pi = p(i);
+    bsteps = NaN(steps, 1);
     D = makedist('Binomial','N',nT,'p',pi);
     A(i,:) = D.pdf(0:nT);
     for j = 1:K
@@ -35,9 +38,10 @@ for i = 1:length(p)
         mse = mean((ytest-yhat).^2);
         b(i) = b(i)+mse;
         if mod(j, savestep) == 0  % save results up to current time
-            B(i, j/savestep) = b(i)/j;
+            bsteps(j/savestep) = b(i)/j;
         end
     end
+    B(i, :) = bsteps;
 end
 
 s_true = zeros(nT+1, 1);
