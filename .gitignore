@@ -6,7 +6,7 @@ figures/
 MATLAB temporary files
 ######################
 *.m~
-
+*.mat
 
 # OS generated files #
 ######################
