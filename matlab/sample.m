@@ -12,7 +12,7 @@ nV = 1000;  % Size of validation set
 
 % Slopes
 m0 = 1;
-m1 = 1.5;
+m1 = 2;
 sigma0 = 0.5;
 sigma1 = 0.5;
 f = sampler(m0, m1, sigma0, sigma1);
@@ -56,4 +56,4 @@ for i = 1:length(s_true)
     end
 end
 
-save('AB.mat', 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep', 'p0')
+save('AB.mat', 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep', 'p0', 'm0', 'm1', 'sigma0', 'sigma1')

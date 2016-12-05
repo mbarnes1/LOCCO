@@ -19,7 +19,7 @@ classdef sampler < handle
         function [x, y] = sample(self, n0, n)
             n1 = n - n0;
             x0 = 2*(rand([n0, 1])-0.5);  % uniform [-1, 1]
-            x1 = 20*(rand([n1, 1])-0.5);  % uniform [-10, 10]
+            x1 = 2*(rand([n1, 1])-0.5);  % uniform [-1, 1]
             y0 = x0*self.m0 + normrnd(0, self.sigma0, [n0, 1]);
             y1 = x1*self.m1 + normrnd(0, self.sigma1, [n1, 1]);
             x = [x0;
