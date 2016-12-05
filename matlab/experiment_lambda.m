@@ -1,5 +1,5 @@
 clear, clc, close all
-load('AB10.mat')
+load('AB_2016-12-05_13-56-12.mat')
 
 %% Regularization convergence experiment
 nlambdas = 5;
@@ -15,7 +15,7 @@ for i = 1:nlambdas
 end
 
 for i = 1:steps
-    b = B(:, i);
+    b = mean(B(:, 1:i), 2);
     for j = 1:length(methods)
         method = methods{j};
         s = method(b);

@@ -1,7 +1,7 @@
 clear, clc, close all
-load('AB10000.mat')
+load('AB_2016-12-05_13-56-12.mat')
 
-b = B(:, end);
+b = mean(B, 2);
 
 %% Ridge Regression
 lambda = .1;
