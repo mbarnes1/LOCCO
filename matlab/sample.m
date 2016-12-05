@@ -15,16 +15,17 @@ m0 = 1;
 m1 = 2;
 sigma0 = 0.5;
 sigma1 = 0.5;
-f = sampler(m0, m1, sigma0, sigma1);
+range0 = [-1, 1];
+range1 = [-10, 10];
+f = sampler(m0, m1, sigma0, sigma1, range0, range1);
 
 p = linspace(p0, 1, 2*nT);
 A = NaN(length(p), nT+1);
 B = NaN(length(p), trials);
 
-parpool(nprocesses);
-parfor i = 1:length(p)
+%parpool(nprocesses);
+for i = 1:length(p)
     p_i = p(i);
-    btrials = NaN(trials, 1);
     D = makedist('Binomial','N',nT,'p',p_i);
     A(i,:) = D.pdf(0:nT);
     btrials = zeros(1, trials);
@@ -58,4 +59,4 @@ for i = 1:length(s_true)
 end
 
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
-save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'm0', 'm1', 'sigma0', 'sigma1')
+save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1')
