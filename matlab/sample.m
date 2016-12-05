@@ -33,7 +33,7 @@ parfor i = 1:length(p)
         n0 = nT - n1;
         [x, y] = f.sample(n0, nT);
         z = dot(x,y)/(dot(x, x));
-        [xtest, ytest] = f.sample(1.0, nV);
+        [xtest, ytest] = f.sample(0, nV);
         yhat = xtest*z;
         mse = mean((ytest-yhat).^2);
         b(i) = b(i)+mse;
@@ -49,11 +49,12 @@ for i = 1:length(s_true)
     for j = 1:K
         [x, y] = f.sample(nT-i+1, nT);
         z = dot(x,y)/(dot(x, x));
-        [xtest, ytest] = f.sample(1.0, nV);
+        [xtest, ytest] = f.sample(0, nV);
         yhat = xtest*z;
         mse = mean((ytest-yhat).^2);
         s_true(i) = s_true(i)+mse/K;
     end
 end
 
-save('AB.mat', 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep', 'p0', 'm0', 'm1', 'sigma0', 'sigma1')
+filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
+save(filename, 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep', 'p0', 'm0', 'm1', 'sigma0', 'sigma1')
