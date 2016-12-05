@@ -24,12 +24,12 @@ b = zeros(length(p), 1);
 
 parpool(nprocesses);
 parfor i = 1:length(p)
-    pi = p(i);
+    p_i = p(i);
     bsteps = NaN(steps, 1);
-    D = makedist('Binomial','N',nT,'p',pi);
+    D = makedist('Binomial','N',nT,'p',p_i);
     A(i,:) = D.pdf(0:nT);
     for j = 1:K
-        n1 = binornd(nT, pi);
+        n1 = binornd(nT, p_i);
         n0 = nT - n1;
         [x, y] = f.sample(n0, nT);
         z = dot(x,y)/(dot(x, x));
@@ -56,4 +56,4 @@ for i = 1:length(s_true)
     end
 end
 
-save('AB.mat', 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep')
+save('AB.mat', 'steps', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'savestep', 'p0')
