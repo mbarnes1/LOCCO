@@ -14,7 +14,9 @@ m0 = 1;
 m1 = 2;
 sigma0 = 0.5;
 sigma1 = 0.5;
-f = sampler(m0, m1, sigma0, sigma1);
+range0 = [-1, 1];
+range1 = [-1, 1];
+f = sampler(m0, m1, sigma0, sigma1, range0, range1);
 
 
 [x, y] = f.sample(n, n);
@@ -27,4 +29,4 @@ set(h,'Interpreter','latex')
 xlim([-1, 1])
 xlabel('$$x_0$$', 'Interpreter', 'latex')
 ylabel('$$x_1$$', 'Interpreter', 'latex')
-title('Uncorrupted Samples')
+%title('Uncorrupted Samples')
