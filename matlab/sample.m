@@ -46,15 +46,18 @@ for i = 1:length(p)
     B(i, :) = btrials;
 end
 
-s_true = zeros(nT+1, 1);
+s_true = zeros(nT+1, trials);
+
 for i = 1:length(s_true)
-    for j = 1:K
-        [x, y] = f.sample(nT-i+1, nT);
-        z = dot(x,y)/(dot(x, x));
-        [xtest, ytest] = f.sample(0, nV);
-        yhat = xtest*z;
-        mse = mean((ytest-yhat).^2);
-        s_true(i) = s_true(i)+mse/K;
+    for j = 1:trials
+        for k = 1:K
+            [x, y] = f.sample(nT-i+1, nT);
+            z = dot(x,y)/(dot(x, x));
+            [xtest, ytest] = f.sample(0, nV);
+            yhat = xtest*z;
+            mse = mean((ytest-yhat).^2);
+            s_true(i, j) = s_true(i, j)+mse/K;
+        end
     end
 end
 
