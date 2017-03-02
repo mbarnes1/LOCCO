@@ -17,13 +17,13 @@ sigma0 = 0.5;
 sigma1 = 0.5;
 range0 = [-1, 1];
 range1 = [-10, 10];
-f = sampler(m0, m1, sigma0, sigma1, range0, range1);
+f = sampler_real(m0, m1, sigma0, sigma1, range0, range1);
 
 p = linspace(p0, 1, 2*nT);
 A = NaN(length(p), nT+1);
 B = NaN(length(p), trials);
 
-%parpool(nprocesses);
+parpool(nprocesses);
 for i = 1:length(p)
     p_i = p(i);
     D = makedist('Binomial','N',nT,'p',p_i);
@@ -32,8 +32,8 @@ for i = 1:length(p)
     for j = 1:trials
         b_jk = 0;
         for k = 1:npertrial
-            n1 = binornd(nT, p_i);
-            n0 = nT - n1;
+            n1 = binornd(nT, p_i);  % number of corrupted samples
+            n0 = nT - n1;  % number of uncorrupted samples
             [x, y] = f.sample(n0, nT);
             z = dot(x,y)/(dot(x, x));
             [xtest, ytest] = f.sample(0, nV);
@@ -48,7 +48,7 @@ end
 
 s_true = zeros(nT+1, trials);
 
-for i = 1:length(s_true)
+parfor i = 1:length(s_true)
     for j = 1:trials
         for k = 1:K
             [x, y] = f.sample(nT-i+1, nT);

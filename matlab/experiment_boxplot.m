@@ -1,14 +1,18 @@
 clear, clc, close all
-load('AB_2016-12-05_15-42-47.mat');
+%load('AB_2016-12-05_15-42-47.mat');
+load('AB_2017-02-03_14-43-33.mat');
 
-results = NaN(trials, 7);
+results = NaN(trials, 8);
 
 lambda = 0.1;
 for trial = 1:trials
     b = B(:, trial);
     
-    %% Naive
-    x_naive = b(1);
+    %% IID
+    x_iid = s_true(round(size(s_true,1)/2), trial);
+    
+    %% LOCO
+    x_loco = b(1);
     
     %% Linear regression (this does terribly)
     %x_linear = (A'*A) \ (A' * b);
@@ -42,17 +46,19 @@ for trial = 1:trials
     x_trend4mono = trendfilter(A, b, 4, lambda, true);
     x_trend4mono = x_trend4mono(1);
     
-    results(trial, :) = [x_naive, x_mono, x_trend2, x_trend2mono, x_trend3, x_trend3mono, x_trend4mono];
+    results(trial, :) = [x_iid, x_loco, x_mono, x_trend2, x_trend2mono, x_trend3, x_trend3mono, x_trend4mono];
 end
 
 %% Final result of full error fit
 f = figure;
 [cmap, ~, ~] = brewermap(3, 'Set2');
-boxplot(abs(results - s_true(1)), {'Base', 'Mono', 'T2', 'T2+mono', 'T3', 'T3+mono', 'T4+mono'});
+boxplot(abs(results - mean(s_true(1, :))), {'IID', 'LOCO', 'Mono', 'T2', 'T2+mono', 'T3', 'T3+mono', 'T4+mono'}, 'Whisker', 99);
 h_median = findobj(gcf, 'type', 'line', 'Tag', 'Median');
 set(h_median, 'Color', cmap(2,:));
 h_box = findobj('Tag','Box');
 set(h_box, 'Color', cmap(3,:));
 ylabel('Absolute error, $$|\hat x_0 - x_0|$$', 'Interpreter', 'latex')
-ylim([0 inf])
-set(f, 'units', 'inches', 'pos', [0 0 5.5 4.125])
+ylim([0 1.05*max(max(abs(results - mean(s_true(1, :)))))])
+h_xlab = xlabel('Baselines   |                                 Our method');
+set(h_xlab,'Position',get(h_xlab,'Position') - [0.8 1 0])
+set(f, 'units', 'inches', 'pos', [0 0 6 4.5])

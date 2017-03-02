@@ -1,13 +1,14 @@
 clear, clc, close all
 %load('AB_2016-12-05_13-56-12.mat')
-load('AB_2016-12-05_15-42-47.mat')
+%load('AB_2016-12-05_15-42-47.mat')
+load('AB_2017-02-03_14-43-33.mat');
 [cmap, ~, ~] = brewermap(5, 'Set2');
 
 b = mean(B, 2);
 
 lambda = 0.1;
 
-figure; hold on
+f = figure; hold on
 %% Regularize 2nd derivative
 s_t2 = trendfilter(A, b, 2, lambda, false);
 plot((0:nT)/nT, s_t2, 'Color', cmap(1,:));
@@ -38,3 +39,4 @@ plot((0:nT)/nT, s_true, 'Color', 'k', 'LineStyle', '--');
 xlabel('Corruption')
 ylabel('MSE')
 legend('T2', 'T3', 'T2 + mono', 'T3 + mono', 'T4+mono', 'True')
+set(f, 'units', 'inches', 'pos', [0 0 6 4.5])
