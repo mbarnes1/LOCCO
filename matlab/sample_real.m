@@ -2,7 +2,7 @@ clear, clc, close all
 
 % Params
 npertrial = 100;
-trials = 1000;
+trials = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
 nprocesses = 2;
 K = npertrial*trials;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
