@@ -54,4 +54,4 @@ for i = 1:length(s_true)
 end
 
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
-save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0')
+save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'f')

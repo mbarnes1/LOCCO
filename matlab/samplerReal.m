@@ -3,6 +3,11 @@ classdef samplerReal < handle
     
     properties (SetAccess = private)
         dataset = 'data/adult.csv';
+        features = {'age', 'education_num', 'hours_per_week', 'race', 'occupation'};
+        clustername = {'native_country'};
+        train_clusters = {'United-States', 'El-Salvador', 'Germany', 'Mexico', 'Philippines', 'Puerto-Rico'};
+        test_clusters = {'India', 'Canada'};
+        label = 'income';
         X0
         Y0
         X1
@@ -12,16 +17,11 @@ classdef samplerReal < handle
     methods
         function self = samplerReal()
             T = readtable(self.dataset, 'Delimiter',',');
-            features = {'age', 'education_num', 'hours_per_week', 'race', 'native_country'};
-            clustername = {'native_country'};
-            train_clusters = {'United-States', 'El-Salvador', 'Germany', 'Mexico', 'Philippines', 'Puerto-Rico'};
-            test_clusters = {'India', 'Canada'};
-            label = 'income';
-            clusters = table2cell(T(:, clustername));
-            self.X0 = T(ismember(clusters, train_clusters), features);
-            self.Y0 = T(ismember(clusters, train_clusters), label);
-            self.X1 = T(ismember(clusters, test_clusters), features);
-            self.Y1 = T(ismember(clusters, test_clusters), label);
+            clusters = table2cell(T(:, self.clustername));
+            self.X0 = T(ismember(clusters, self.train_clusters), self.features);
+            self.Y0 = T(ismember(clusters, self.train_clusters), self.label);
+            self.X1 = T(ismember(clusters, self.test_clusters), self.features);
+            self.Y1 = T(ismember(clusters, self.test_clusters), self.label);
         end
 
         function [x, y] = sample(self, n0, n)
