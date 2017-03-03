@@ -16,27 +16,27 @@ p = linspace(p0, 1, 2*nT);
 A = NaN(length(p), nT+1);
 B = NaN(length(p), trials);
 
-%parpool(nprocesses);
-% for i = 1:length(p)
-%     p_i = p(i);
-%     D = makedist('Binomial','N',nT,'p',p_i);
-%     A(i,:) = D.pdf(0:nT);
-%     btrials = zeros(1, trials);
-%     for j = 1:trials
-%         b_jk = 0;
-%         for k = 1:npertrial
-%             n1 = binornd(nT, p_i);
-%             n0 = nT - n1;
-%             [x, y, xtest, ytest] = f.sample_dual(n0, nT, 0, nV);
-%             SVMModel = fitcsvm(x, y);
-%             yhat = predict(SVMModel, xtest);
-%             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
-%             b_jk = b_jk+error;
-%         end
-%         btrials(j) = b_jk/npertrial;
-%     end
-%     B(i, :) = btrials;
-% end
+parpool(nprocesses);
+for i = 1:length(p)
+    p_i = p(i);
+    D = makedist('Binomial','N',nT,'p',p_i);
+    A(i,:) = D.pdf(0:nT);
+    btrials = zeros(1, trials);
+    for j = 1:trials
+        b_jk = 0;
+        for k = 1:npertrial
+            n1 = binornd(nT, p_i);
+            n0 = nT - n1;
+            [x, y, xtest, ytest] = f.sample_dual(n0, nT, 0, nV);
+            SVMModel = fitcsvm(x, y);
+            yhat = predict(SVMModel, xtest);
+            error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
+            b_jk = b_jk+error;
+        end
+        btrials(j) = b_jk/npertrial;
+    end
+    B(i, :) = btrials;
+end
 
 
 s_true = zeros(nT+1, trials);
@@ -54,4 +54,4 @@ for i = 1:length(s_true)
 end
 
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
-save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1')
+save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0')
