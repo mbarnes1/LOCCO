@@ -3,7 +3,7 @@ clear, clc, close all
 % Params
 npertrial = 100;
 trials = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
-nprocesses = 2;
+nprocesses = 32;
 K = npertrial*trials;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
 nT = 100;  % Number of samples in train set
@@ -17,7 +17,8 @@ A = NaN(length(p), nT+1);
 B = NaN(length(p), trials);
 
 parpool(nprocesses);
-for i = 1:length(p)
+tic;
+parfor i = 1:length(p)
     p_i = p(i);
     D = makedist('Binomial','N',nT,'p',p_i);
     A(i,:) = D.pdf(0:nT);
@@ -37,11 +38,12 @@ for i = 1:length(p)
     end
     B(i, :) = btrials;
 end
-
+t = toc; tic;
+fprintf('B3 sampling time: %f sec \n', t);
 
 s_true = zeros(nT+1, trials);
 
-for i = 1:length(s_true)
+parfor i = 1:length(s_true)
     for j = 1:trials
         for k = 1:K
             [x, y, xtest, ytest] = f.sample_dual(nT-i+1, nT, 0, nV);
@@ -52,6 +54,8 @@ for i = 1:length(s_true)
         end
     end
 end
+t = toc;
+fprintf('True error sampling time: %f sec \n', t);
 
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
 save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'f')
