@@ -1,6 +1,7 @@
 clear, clc, close all
 
 % Params
+f = samplerReal('heart');
 npertrial = 100;
 trials = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
 nprocesses = 32;
@@ -10,8 +11,6 @@ nT = 100;  % Number of samples in train set
 nV = 100;
 
 % Slopes
-f = samplerReal();
-
 p = linspace(p0, 1, 2*nT);
 A = NaN(length(p), nT+1);
 B = NaN(length(p), trials);
