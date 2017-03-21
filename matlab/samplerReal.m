@@ -25,10 +25,10 @@ classdef samplerReal < handle
                 self.label = 'income';
             elseif dataset == 'heart'
                 self.dataset = 'data/heart/heart_all.csv';
-                self.features = {'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'};
+                self.features = {'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'thal'};
                 self.clustername = {'country'};
-                self.train_clusters = {'cleveland', 'hungarian', 'switzerland'};
-                self.test_clusters = {'va'};
+                self.train_clusters = {'cleveland', 'va', 'switzerland'};
+                self.test_clusters = {'hungarian'};
                 self.label = 'num';
             else
                 error('Invalid dataset name')
