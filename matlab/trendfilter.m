@@ -1,4 +1,4 @@
-function [ x ] = trendfilter( A, b, order, lambda, mono )
+function [ x, res ] = trendfilter( A, b, order, lambda, mono )
 %TRENDFILTER Fit trend filter to data, with monotonic and positive
 %constraints
 %   Inputs:
@@ -14,10 +14,13 @@ function [ x ] = trendfilter( A, b, order, lambda, mono )
     pos_mono = eye(m) - diag(ones(m-1,1), 1);
     if order == 2
         trend = eye(m) - 2*diag(ones(m-1,1), 1) + diag(ones(m-2,1), 2);
+        trend = trend(1:end-2, :);
     elseif order == 3
         trend = - eye(m) + 3*diag(ones(m-1,1), 1) - 3*diag(ones(m-2,1), 2) + diag(ones(m-3,1), 3);
+        trend = trend(1:end-3, :);
     elseif order == 4
         trend = eye(m) - 4*diag(ones(m-1,1), 1) + 6*diag(ones(m-2,1), 2) -4*diag(ones(m-3,1), 3) + diag(ones(m-4,1), 4);
+        trend = trend(1:end-4, :);
     else
         error('Invalid input')
     end
@@ -34,6 +37,5 @@ function [ x ] = trendfilter( A, b, order, lambda, mono )
             minimize( norm(A*x - b, 2) + lambda * norm(trend*x, 2) )
         cvx_end
     end
-
+    res = norm(A*x - b, 2);
 end
-
