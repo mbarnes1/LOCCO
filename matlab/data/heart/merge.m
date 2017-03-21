@@ -45,25 +45,39 @@ end
 T.sex = categorical(T.sex);
 T.sex(T.sex == '0') = 'female';
 T.sex(T.sex == '1') = 'male';
+T.sex(ismissing(T.sex)) = 'missing';
 
 T.cp = categorical(T.cp);
 T.cp(T.cp == '1') = 'typical';
 T.cp(T.cp == '2') = 'atypical';
 T.cp(T.cp == '3') = 'non';
 T.cp(T.cp == '4') = 'asymptomatic';
+T.cp(ismissing(T.cp)) = 'missing';
 
 T.restecg = categorical(T.restecg);
 T.restecg(T.restecg == '0') = 'normal';
 T.restecg(T.restecg == '1') = 'abnormal';
 T.restecg(T.restecg == '2') = 'probable';
+T.restecg(ismissing(T.restecg)) = 'missing';
 
 T.thal = categorical(T.thal);
 T.thal(T.thal == '3') = 'normal';
 T.thal(T.thal == '6') = 'fixed';
 T.thal(T.thal == '7') = 'reversible';
+T.thal(ismissing(T.thal)) = 'missing';
+
+T.slope = categorical(T.slope);
+T.slope(T.slope == '1') = 'up';
+T.slope(T.slope == '2') = 'flat';
+T.slope(T.slope == '3') = 'down';
+T.slope(ismissing(T.slope)) = 'missing';
+
+T.ca = [];  % too many nan values
 
 T.num(T.num >= 1) = 1;
 T.num = categorical(T.num);
 T.num(T.num == '0') = 'neg';
 T.num(T.num == '1') = 'pos';
+
+T = rmmissing(T);  % remove missing rows
 writetable(T, 'heart_all.csv')
