@@ -1,11 +1,14 @@
 clear, clc, close all
 % Synthetic experiments
-%load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
-%lambda = 0.1;
+load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
+lambda = 0.1;
 % Real experiments
 %load('AB_2017-03-11_13-21-26.mat');  % Real Adult data 2500
-load('AB_2017-03-17_07-29-51.mat');  % Real Adult data 10000
-lambda = 100;
+%load('AB_2017-03-17_07-29-51.mat');  % Real Adult data 10000
+%lambda = 10;
+% Heart experiments
+%load('AB_2017-03-24_20-22-09.mat');
+%lambda = 10;
 
 results = NaN(trials, 8);
 
@@ -41,7 +44,7 @@ for trial = 1:trials
     %% Regularize 4th derivative, monotonic
     x_trend4mono = trendfilter(A, b, 4, lambda, true);
     x_trend4mono = x_trend4mono(1);
-    
+
     results(trial, :) = [x_iid, x_loco, x_mono, x_trend2, x_trend2mono, x_trend3, x_trend3mono, x_trend4mono];
 end
 
@@ -57,5 +60,5 @@ ylabel('Absolute error, $$|\hat e_0 - e_0|$$', 'Interpreter', 'latex')
 ylim([0 1.05*max(max(abs(results - mean(s_true(1, :)))))])
 h_xlab = xlabel('Baselines   |                                 Our method');
 %set(h_xlab,'Position',get(h_xlab,'Position') - [0.8 0 0])
-set(h_xlab,'Position',[3.7 -0.001 0])
+set(h_xlab,'Position',[3.7 -0.0011 0])
 set(f, 'units', 'inches', 'pos', [0 0 6 4.5])
