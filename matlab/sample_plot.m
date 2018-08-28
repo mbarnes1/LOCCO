@@ -31,3 +31,16 @@ xlabel('x')
 ylabel('y')
 set(gcf, 'units', 'inches', 'pos', [0 0 6 4.5])
 %title('Uncorrupted Samples')
+
+%% Randomly move 10% of samples from V to T
+figure;
+p_0 = 0.1;
+to_not_flip = rand(n, 1) > p_0;
+groups = [zeros(length(x), 1); to_not_flip];
+gscatter([x; xtest], [y; ytest], groups, cmap,'..', 15)
+h = legend('$$\mathcal{T}$$', '$$\mathcal{V}$$', 'Location', 'NorthWest');
+set(h,'Interpreter','latex')
+xlim([-1, 1])
+xlabel('x')
+ylabel('y')
+set(gcf, 'units', 'inches', 'pos', [0 0 6 4.5])

@@ -7,6 +7,7 @@ function [ x, res ] = trendfilter( A, b, order, lambda, mono )
 %       order: Regularize this order derivative
 %       lambda: Regularization constant >= 0
 %       mono: True/False, whether to enforce monotonic constraint
+%       quiet: True/False, whether to run cvx in quiet mode
 %   Outputs:
 %       x - Solution (m x 1)
     
