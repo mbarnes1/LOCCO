@@ -27,7 +27,7 @@ range1 = [-10, 10];
 f = sampler(m0, m1, sigma0, sigma1, range0, range1);
 
 p = linspace(p0, 1, 2*nT);
-A = NaN(length(p), nT+1);
+%A = NaN(length(p), nT+1);
 B = NaN(length(p), n_trials_per_corruption_level);
 
 pool = gcp('nocreate'); % If no pool, do not create new one.
@@ -48,7 +48,7 @@ tic
 parfor i = 1:length(p)
     p_i = p(i);
     D = makedist('Binomial','N',nT,'p',p_i);
-    A(i,:) = D.pdf(0:nT);
+    %A(i,:) = D.pdf(0:nT);
     btrials = zeros(1, n_trials_per_corruption_level);
     for j = 1:n_trials_per_corruption_level
         b_jk = 0;
@@ -86,4 +86,4 @@ end
 
 %% Save results
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
-save(filename, 'dataset_name', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'A', 'nT', 'nV', 's_true', 'p0', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1', 'nprocesses', 'time')
+save(filename, 'dataset_name', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 'p0', 'p', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1', 'nprocesses', 'time')
