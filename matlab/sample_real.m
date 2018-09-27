@@ -1,30 +1,50 @@
 clear, clc, close all
 
-% Params
-f = samplerReal('heart');
-npertrial = 100;
-trials = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
-nprocesses = 32;
-K = npertrial*trials;  % number of bootstrap iterations per corruption level
+%% Params
+dataset_name = 'parkinson';
+f = samplerReal(dataset_name);
+n_resamples_per_trial = 100;
+n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
+nprocesses = 10;
+n_resamples_per_corruption_level = n_resamples_per_trial*n_trials_per_corruption_level;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
-nT = 100;  % Number of samples in train set
 nV = 100;
 
-% Slopes
-p = linspace(p0, 1, 2*nT);
-A = NaN(length(p), nT+1);
-B = NaN(length(p), trials);
+% Choose training set size by specifying p_clean_resample
+%p_clean_resample = 0.002; % Probability of resampling zero corrupted samples
+%nT = floor(log(p_clean_resample)/log(1-p0));  % Number of samples in train set
 
-parpool(nprocesses);
+% Choose training set size directly
+nT = 100; %10000;
+p_clean_resample = (1-p0)^nT;
+
+n_corruption_levels = 10;%2*nT;
+
+p = linspace(p0, 1, n_corruption_levels);
+B = NaN(length(p), n_trials_per_corruption_level);
+
+pool = gcp('nocreate'); % If no pool, do not create new one.
+if isempty(pool)
+    poolsize = 0;
+else
+    poolsize = pool.NumWorkers;
+end
+if poolsize ~= nprocesses
+    if poolsize > 0
+        delete(pool)
+    end
+    parpool(nprocesses);
+end
+
 tic;
-parfor i = 1:length(p)
+for i = 1:length(p)
     p_i = p(i);
     D = makedist('Binomial','N',nT,'p',p_i);
     A(i,:) = D.pdf(0:nT);
-    btrials = zeros(1, trials);
-    for j = 1:trials
+    btrials = zeros(1, n_trials_per_corruption_level);
+    for j = 1:n_trials_per_corruption_level
         b_jk = 0;
-        for k = 1:npertrial
+        for k = 1:n_resamples_per_trial
             n1 = binornd(nT, p_i);
             n0 = nT - n1;
             [x, y, xtest, ytest] = f.sample_dual(n0, nT, 0, nV);
@@ -33,28 +53,28 @@ parfor i = 1:length(p)
             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
             b_jk = b_jk+error;
         end
-        btrials(j) = b_jk/npertrial;
+        btrials(j) = b_jk/n_resamples_per_trial;
     end
     B(i, :) = btrials;
 end
-t = toc; tic;
-fprintf('B3 sampling time: %f sec \n', t);
+time = toc; tic;
+fprintf('B3 sampling time: %f sec \n', time);
 
-s_true = zeros(nT+1, trials);
+s_true = zeros(nT+1, n_trials_per_corruption_level);
 
 parfor i = 1:length(s_true)
-    for j = 1:trials
-        for k = 1:K
+    for j = 1:n_trials_per_corruption_level
+        for k = 1:n_resamples_per_corruption_level
             [x, y, xtest, ytest] = f.sample_dual(nT-i+1, nT, 0, nV);
             SVMModel = fitcsvm(x, y);
             yhat = predict(SVMModel, xtest);
             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
-            s_true(i, j) = s_true(i, j)+error/K;
+            s_true(i, j) = s_true(i, j)+error/n_resamples_per_corruption_level;
         end
     end
 end
 t = toc;
 fprintf('True error sampling time: %f sec \n', t);
 
-filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '.mat'];
-save(filename, 'trials', 'B', 'A', 'nT', 'nV', 'K', 's_true', 'npertrial', 'p0', 'f')
+filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
+save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 'p0', 'p', 'nprocesses', 'time')

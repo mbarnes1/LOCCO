@@ -16,25 +16,40 @@ classdef samplerReal < handle
 
     methods
         function self = samplerReal(dataset)
-            if dataset == 'adult'
-                self.dataset = 'data/adult.csv';
+            if strcmp(dataset, 'adult')
+                self.dataset = 'data/adult/adult.csv';
                 self.features = {'age', 'education_num', 'hours_per_week', 'race', 'occupation'};
                 self.clustername = {'native_country'};
                 self.train_clusters = {'United-States', 'El-Salvador', 'Germany', 'Mexico', 'Philippines', 'Puerto-Rico'};
                 self.test_clusters = {'India', 'Canada'};
                 self.label = 'income';
-            elseif dataset == 'heart'
+                opts = detectImportOptions(self.dataset);
+            elseif strcmp(dataset, 'heart')
                 self.dataset = 'data/heart/heart_all.csv';
                 self.features = {'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'thal'};
                 self.clustername = {'country'};
                 self.train_clusters = {'cleveland', 'va', 'switzerland'};
                 self.test_clusters = {'hungarian'};
                 self.label = 'num';
+                opts = detectImportOptions(self.dataset);
+            elseif strcmp(dataset, 'parkinson')
+                self.dataset = 'data/parkinson/train_data.csv';
+                self.features = {'jitter_local', 'jitter_abs', 'jitter_rap', 'jitter_ppq5', 'jitter_ddp', 'shimmer_local', 'shimmer_db', 'shimmer_apq3', 'shimmer_apq5', 'shimmer_apq11', 'shimmer_dda', 'ac', 'nth', 'htn', 'median_pitch', 'mean_pitch', 'std_dev', 'min_pitch', 'max_pitch', 'pulses', 'periods', 'mean_period', 'std_dev_period', 'unvoiced', 'breaks', 'deg_breaks', 'UPDRS'};
+                self.clustername = {'subject'};
+                self.train_clusters = horzcat(1:16,20:36);
+                self.test_clusters = horzcat(17:20,37:40);
+                self.label = 'class';
+                opts = detectImportOptions(self.dataset);
+                opts = setvartype(opts, {'class'}, 'char');
             else
                 error('Invalid dataset name')
             end
-            T = readtable(self.dataset, 'Delimiter',',');
+            opts.Delimiter = ',';
+            T = readtable(self.dataset, opts);
             clusters = table2cell(T(:, self.clustername));
+            if ~ischar(clusters{1})
+                clusters = cell2mat(clusters);
+            end
             self.X0 = T(ismember(clusters, self.train_clusters), self.features);
             self.Y0 = T(ismember(clusters, self.train_clusters), self.label);
             self.X1 = T(ismember(clusters, self.test_clusters), self.features);

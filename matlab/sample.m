@@ -14,8 +14,10 @@ nV = 1000;  % Size of validation set
 %nT = floor(log(p_clean_resample)/log(1-p0));  % Number of samples in train set
 
 % Choose training set size directly
-nT = 10000;
+nT = 10; %10000;
 p_clean_resample = (1-p0)^nT;
+
+n_corruption_levels = 2*nT;
 
 % Slopes
 m0 = 1;
@@ -26,7 +28,7 @@ range0 = [-1, 1];
 range1 = [-10, 10];
 f = sampler(m0, m1, sigma0, sigma1, range0, range1);
 
-p = linspace(p0, 1, 2*nT);
+p = linspace(p0, 1, n_corruption_levels);
 %A = NaN(length(p), nT+1);
 B = NaN(length(p), n_trials_per_corruption_level);
 
@@ -86,4 +88,4 @@ end
 
 %% Save results
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
-save(filename, 'dataset_name', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 'p0', 'p', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1', 'nprocesses', 'time')
+save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 'p0', 'p', 'm0', 'm1', 'sigma0', 'sigma1', 'range0', 'range1', 'nprocesses', 'time')
