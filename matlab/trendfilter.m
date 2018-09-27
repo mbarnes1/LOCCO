@@ -1,4 +1,4 @@
-function [ x, res ] = trendfilter( A, b, order, lambda, mono )
+function [ x, res ] = trendfilter( A, b, order, lambda, mono, subsample )
 %TRENDFILTER Fit trend filter to data, with monotonic and positive
 %constraints
 %   Inputs:
@@ -7,9 +7,16 @@ function [ x, res ] = trendfilter( A, b, order, lambda, mono )
 %       order: Regularize this order derivative
 %       lambda: Regularization constant >= 0
 %       mono: True/False, whether to enforce monotonic constraint
-%       quiet: True/False, whether to run cvx in quiet mode
+%       subsample: Factor to downsample the number of corruption levels in
+%       A and b
 %   Outputs:
 %       x - Solution (m x 1)
+    
+    n = size(A, 1);
+    n_new = floor(n / subsample);
+    indices = floor(linspace(1, n, n_new));
+    A = A(indices, :);
+    b = b(indices, :);
     
     m = size(A, 2);
     pos_mono = eye(m) - diag(ones(m-1,1), 1);
