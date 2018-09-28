@@ -1,7 +1,7 @@
 clear, clc, close all
 
 %% Params
-dataset_name = 'parkinson';
+dataset_name = 'dota';
 f = samplerReal(dataset_name);
 n_resamples_per_trial = 100;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
