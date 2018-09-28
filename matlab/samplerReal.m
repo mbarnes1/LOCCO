@@ -36,8 +36,9 @@ classdef samplerReal < handle
                 self.dataset = 'data/parkinson/train_data.csv';
                 self.features = {'jitter_local', 'jitter_abs', 'jitter_rap', 'jitter_ppq5', 'jitter_ddp', 'shimmer_local', 'shimmer_db', 'shimmer_apq3', 'shimmer_apq5', 'shimmer_apq11', 'shimmer_dda', 'ac', 'nth', 'htn', 'median_pitch', 'mean_pitch', 'std_dev', 'min_pitch', 'max_pitch', 'pulses', 'periods', 'mean_period', 'std_dev_period', 'unvoiced', 'breaks', 'deg_breaks'}; %, 'UPDRS'};
                 self.clustername = {'subject'};
-                self.train_clusters = horzcat(1:16,20:36);
-                self.test_clusters = horzcat(17:20,37:40);
+                self.train_clusters = 1:40;
+                self.test_clusters = 1:4:40;
+                self.train_clusters(self.test_clusters) = [];
                 self.label = 'class';
                 opts = detectImportOptions(self.dataset);
                 opts = setvartype(opts, {'class'}, 'char');
