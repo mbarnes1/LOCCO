@@ -5,7 +5,7 @@ dataset_name = 'parkinson';
 f = samplerReal(dataset_name);
 n_resamples_per_trial = 100;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
-nprocesses = 10;
+nprocesses = 2;
 n_resamples_per_corruption_level = n_resamples_per_trial*n_trials_per_corruption_level;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
 nV = 100;
@@ -60,12 +60,15 @@ end
 time = toc; tic;
 fprintf('B3 sampling time: %f sec \n', time);
 
-s_true = zeros(nT+1, n_trials_per_corruption_level);
+% Compute s_true, at most 50 points
+s_true_n_corrupted_samples = floor(linspace(0, nT, min(50, nT+1)));
+s_true = zeros(length(s_true_n_corrupted_samples), n_trials_per_corruption_level);
 
-parfor i = 1:length(s_true)
+for i = 1:length(s_true)
+    n_corrupted_samples = s_true_n_corrupted_samples(i);
     for j = 1:n_trials_per_corruption_level
         for k = 1:n_resamples_per_corruption_level
-            [x, y, xtest, ytest] = f.sample_dual(nT-i+1, nT, 0, nV);
+            [x, y, xtest, ytest] = f.sample_dual(nT-n_corrupted_samples, nT, 0, nV);
             SVMModel = fitcsvm(x, y);
             yhat = predict(SVMModel, xtest);
             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
@@ -77,4 +80,4 @@ t = toc;
 fprintf('True error sampling time: %f sec \n', t);
 
 filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
-save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 'p0', 'p', 'nprocesses', 'time')
+save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 's_true_n_corrupted_samples', 'p0', 'p', 'nprocesses', 'time')

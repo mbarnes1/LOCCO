@@ -1,6 +1,6 @@
 clear, clc
 % Synthetic experiments
-load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
+%load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
 lambda = 0.1;
 lambda_sketch = 0.01;
 sketch_mean = 10;
@@ -16,11 +16,23 @@ sketch_block = 10;
 %load('AB_2017-03-24_20-22-09.mat');
 %lambda = 10;
 
-methods = {'IID', 'LOCO', 'T4+mono', 'Basis', 'Sketch'};
-%methods = {'IID', 'LOCO', 'Mono', 'T2', 'T2+mono', 'T3', 'T3+mono', 'T4+mono', 'Basis', 'Medoid', 'Block', 'Mean'};
-results = NaN(trials, length(methods));
+% Temp:
+load('bootstraps/AB_2018-09-25_17-30-40_synthetic_nT1000_p00.1_K100.mat')
 
-for trial = 1:trials
+methods = {'IID', 'LOCO', 'Basis'}; %'T4+mono', 'Basis', 'Sketch'};
+%methods = {'IID', 'LOCO', 'Mono', 'T2', 'T2+mono', 'T3', 'T3+mono', 'T4+mono', 'Basis', 'Medoid', 'Block', 'Mean'};
+results = NaN(n_trials_per_corruption_level, length(methods));
+
+%% Compute A
+% A = NaN(length(p), nT+1);
+% for i = 1:length(p)
+%     p_i = p(i);
+%     D = makedist('Binomial','N',nT,'p',p_i);
+%     A(i,:) = D.pdf(0:nT);
+% end
+
+%% Run trials
+for trial = 1:n_trials_per_corruption_level
     b = B(:, trial);
     method_counter = 1;
     
