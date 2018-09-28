@@ -5,7 +5,7 @@ dataset_name = 'dota';
 f = samplerReal(dataset_name);
 n_resamples_per_trial = 100;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
-nprocesses = 2;
+nprocesses = 12;
 n_resamples_per_corruption_level = n_resamples_per_trial*n_trials_per_corruption_level;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
 nV = 100;
@@ -37,7 +37,7 @@ if poolsize ~= nprocesses
 end
 
 tic;
-for i = 1:length(p)
+parfor i = 1:length(p)
     p_i = p(i);
     D = makedist('Binomial','N',nT,'p',p_i);
     A(i,:) = D.pdf(0:nT);
@@ -64,7 +64,7 @@ fprintf('B3 sampling time: %f sec \n', time);
 s_true_n_corrupted_samples = floor(linspace(0, nT, min(50, nT+1)));
 s_true = zeros(length(s_true_n_corrupted_samples), n_trials_per_corruption_level);
 
-for i = 1:length(s_true)
+parfor i = 1:length(s_true)
     n_corrupted_samples = s_true_n_corrupted_samples(i);
     for j = 1:n_trials_per_corruption_level
         for k = 1:n_resamples_per_corruption_level
