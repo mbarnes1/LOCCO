@@ -48,9 +48,12 @@ classdef samplerReal < handle
                 %self.clustername = {'cluster'};
                 %self.train_clusters = [111, 112, 121, 122, 123, 124, 131, 132, 133, 134, 135, 136, 137, 138, 144, 145, 151, 152, 153, 154, 155, 156, 161, 171, 181, 182, 183, 184, 185, 186, 187, 188, 191, 192, 204, 211, 212, 213];
                 %self.test_clusters = [223, 224, 225, 227, 231, 232, 241, 251, 261];
-                self.clustername = {'mode'};
-                self.train_clusters = [1, 2, 3, 4, 5, 6, 7, 8];
-                self.test_clusters = [9];
+                %self.clustername = {'mode'};
+                %self.train_clusters = [1, 2, 3, 4, 5, 6, 7, 8];
+                %self.test_clusters = [9];
+                self.clustername = {'type'};
+                self.train_clusters = [1, 2];
+                self.test_clusters = [3];
                 self.label = 'win';
                 opts = detectImportOptions(self.dataset);
                 opts = setvartype(opts, {'win'}, 'char');

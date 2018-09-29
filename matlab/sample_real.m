@@ -1,5 +1,9 @@
 clear, clc, close all
 
+git = getGitInfo();
+git = git.hash(1:6);
+notes = '';
+
 %% Params
 dataset_name = 'dota';
 f = samplerReal(dataset_name);
@@ -79,5 +83,5 @@ end
 t = toc;
 fprintf('True error sampling time: %f sec \n', t);
 
-filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
-save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 's_true_n_corrupted_samples', 'p0', 'p', 'nprocesses', 'time')
+filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
+save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 's_true_n_corrupted_samples', 'p0', 'p', 'nprocesses', 'time', 'notes', 'git')
