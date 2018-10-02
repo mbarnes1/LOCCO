@@ -1,4 +1,4 @@
-function [ x, res ] = trendfilter( A, b, order, lambda, mono, subsample )
+function [ x, res, vargout ] = trendfilter( A, b, order, lambda, mono, subsample )
 %TRENDFILTER Fit trend filter to data, with monotonic and positive
 %constraints
 %   Inputs:
@@ -11,6 +11,8 @@ function [ x, res ] = trendfilter( A, b, order, lambda, mono, subsample )
 %       A and b
 %   Outputs:
 %       x - Solution (m x 1)
+%       res - Residual
+%       vargout - Optionally, return the cvx_status
     
     n = size(A, 1);
     n_new = floor(n / subsample);
@@ -46,4 +48,9 @@ function [ x, res ] = trendfilter( A, b, order, lambda, mono, subsample )
         cvx_end
     end
     res = norm(A*x - b, 2);
+    if nargout > 2
+        vargout{1} = cvx_status;
+        vargout{2} = cvx_optbnd;
+        vargout{3} = cvx_slvtol;
+    end
 end

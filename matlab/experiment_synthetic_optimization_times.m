@@ -7,6 +7,9 @@ lambda = 0.1;
 subsample = 1;
 
 times = NaN(length(rows), length(columns));
+statuses = cell(length(rows), length(columns));
+cvx_optbnds = cell(length(rows), length(columns));
+cvx_slvtol = cell(length(rows), length(columns));
 
 for i = 1:length(rows)
     n_rows = rows(i);
@@ -29,8 +32,11 @@ for i = 1:length(rows)
         tic;
         %f = @() trendfilter(A, b, 4, lambda, true, subsample);
         %t_t4mono = timeit(f);
-        [~, ~] = trendfilter(A, b, 4, lambda, true, subsample);
+        [~, ~, solution_status] = trendfilter(A, b, 4, lambda, true, subsample);
         t_t4mono = toc;
         times(i, j) = t_t4mono;
+        statuses{i, j} = solution_status{1};
+        cvx_optbnds{i, j} = solution_status{2};
+        cvx_slvtol{i, j} = solution_status{3};
     end
 end
