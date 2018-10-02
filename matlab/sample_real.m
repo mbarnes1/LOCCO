@@ -5,7 +5,7 @@ git = git.hash(1:6);
 notes = '';
 
 %% Params
-dataset_name = 'dota';
+dataset_name = 'parkinson';
 f = samplerReal(dataset_name);
 n_resamples_per_trial = 100;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
@@ -72,7 +72,7 @@ s_true = zeros(length(s_true_n_corrupted_samples), n_trials_per_corruption_level
 parfor i = 1:length(s_true)
     n_corrupted_samples = s_true_n_corrupted_samples(i);
     if i == 1
-        n_resamples_this_trial = n_trials_per_corruption_level;
+        n_resamples_this_trial = n_resamples_per_corruption_level;
     else
         n_resamples_this_trial = n_trials_per_corruption_level;
     end
