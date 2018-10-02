@@ -12,6 +12,7 @@ n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, 
 nprocesses = 12;
 n_resamples_per_corruption_level = n_resamples_per_trial*n_trials_per_corruption_level;  % number of bootstrap iterations per corruption level
 p0 = 0.1;  % natural corruption (dist1 samples in training)
+p_max = 1.0;  % maximum artificial corruption to inject (including p_0)
 nV = 100;
 
 % Choose training set size by specifying p_clean_resample
@@ -24,7 +25,7 @@ p_clean_resample = (1-p0)^nT;
 
 n_corruption_levels = 10;%2*nT;
 
-p = linspace(p0, 1, n_corruption_levels);
+p = linspace(p0, p_max, n_corruption_levels);
 B = NaN(length(p), n_trials_per_corruption_level);
 
 pool = gcp('nocreate'); % If no pool, do not create new one.
