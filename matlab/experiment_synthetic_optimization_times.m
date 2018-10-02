@@ -1,8 +1,11 @@
 % Where does optimization take a long (intractable) time?
 clear, clc, close all
 
-rows = [10, 100 1000];
-columns = [10, 100, 1000, 10000, 50000];
+git = getGitInfo();
+git = git.hash(1:6);
+
+rows = [10, 100, 1000];
+columns = [10, 100, 1000, 10000, 50000, 100000];
 lambda = 0.1;
 subsample = 1;
 sketch_factor = 10;
@@ -66,3 +69,8 @@ for i = 1:length(rows)
         sketch_cvx_slvtol{i, j} = solution_state{3};
     end
 end
+
+filename = ['cvx_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '.mat'];
+save(filename, 'sketch_times', 'sketch_cvx_statuses', 'sketch_cvx_optbnds', 'sketch_cvx_slvtol', ...
+    't4mono_times', 't4mono_cvx_statuses', 't4mono_cvx_optbnds', 't4mono_cvx_slvtol', ...
+    'basis_times', 'rows', 'columns', 'git')
