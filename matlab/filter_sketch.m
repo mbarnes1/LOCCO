@@ -1,4 +1,4 @@
-function [ x ] = filter_sketch( A, b, s, method, lambda, mono )
+function [ x, res, vargout ] = filter_sketch( A, b, s, method, lambda, mono, subsample )
 %FILTER_SKETCH Solve system using matrix sketching.
 %   Inputs:
 %       A: n x m
@@ -19,9 +19,10 @@ switch method
         error('Invalid sketching method.')
 end
 if or(lambda > 0, mono)
-    x = trendfilter(S, b, 2, lambda, mono);
+    [x, res, vargout] = trendfilter(S, b, 2, lambda, mono, subsample);
 else
     x = S \ b;
+    res = NaN;
 end
 x = x(idx);
 
