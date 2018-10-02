@@ -71,16 +71,23 @@ s_true = zeros(length(s_true_n_corrupted_samples), n_trials_per_corruption_level
 
 parfor i = 1:length(s_true)
     n_corrupted_samples = s_true_n_corrupted_samples(i);
+    if i == 1
+        n_resamples_this_trial = n_trials_per_corruption_level;
+    else
+        n_resamples_this_trial = n_trials_per_corruption_level;
+    end
+    
     for j = 1:n_trials_per_corruption_level
-        for k = 1:n_resamples_per_corruption_level
+        for k = 1:n_resamples_this_trial
             [x, y, xtest, ytest] = f.sample_dual(nT-n_corrupted_samples, nT, 0, nV);
             SVMModel = fitcsvm(x, y);
             yhat = predict(SVMModel, xtest);
             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
-            s_true(i, j) = s_true(i, j)+error/n_resamples_per_corruption_level;
+            s_true(i, j) = s_true(i, j)+error/n_resamples_this_trial;
         end
     end
 end
+
 s_true_time = toc;
 fprintf('True error sampling time: %f sec \n', s_true_time);
 
