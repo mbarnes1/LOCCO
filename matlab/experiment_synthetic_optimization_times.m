@@ -6,7 +6,7 @@ git = git.hash(1:6);
 
 n_trials = 30;
 rows = [10]; %, 100, 1000];
-columns = logspace(1, 5, 10); %[10, 100, 1000, 10000, 50000, 100000];
+columns = floor(logspace(1, 5, 10)); %[10, 100, 1000, 10000, 50000, 100000];
 lambda = 0.1;
 subsample = 1;
 sketch_factor = 10;
