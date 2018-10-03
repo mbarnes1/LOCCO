@@ -57,9 +57,8 @@ for i = 1:length(rows)
         end
         
         for k = 1:n_trials
-            fprintf('Total true error sampling time: %f sec \n', s_true_time);
-
-            [n_rows, n_columns]
+            fprintf('Row %i, Column %i, Trial %i of %i \n', n_rows, n_columns, k, n_trials);
+            
             % T4 + mono
             tic;
             %f = @() trendfilter(A, b, 4, lambda, true, subsample);
