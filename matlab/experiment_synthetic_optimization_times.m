@@ -4,25 +4,40 @@ clear, clc, close all
 git = getGitInfo();
 git = git.hash(1:6);
 
-rows = [10, 100, 1000];
-columns = [10, 100, 1000, 10000, 50000, 100000];
+n_trials = 30;
+rows = [10]; %, 100, 1000];
+columns = logspace(1, 5, 10); %[10, 100, 1000, 10000, 50000, 100000];
 lambda = 0.1;
 subsample = 1;
 sketch_factor = 10;
 
-t4mono_times = NaN(length(rows), length(columns));
-t4mono_cvx_statuses = cell(length(rows), length(columns));
-t4mono_cvx_optbnds = cell(length(rows), length(columns));
-t4mono_cvx_slvtol = cell(length(rows), length(columns));
+t4mono_times = NaN(length(rows), length(columns), n_trials);
+t4mono_cvx_statuses = cell(length(rows), length(columns), n_trials);
+t4mono_cvx_optbnds = cell(length(rows), length(columns), n_trials);
+t4mono_cvx_slvtol = cell(length(rows), length(columns), n_trials);
 
-sketch_times = NaN(length(rows), length(columns));
-sketch_cvx_statuses = cell(length(rows), length(columns));
-sketch_cvx_optbnds = cell(length(rows), length(columns));
-sketch_cvx_slvtol = cell(length(rows), length(columns));
+sketch_times = NaN(length(rows), length(columns), n_trials);
+sketch_cvx_statuses = cell(length(rows), length(columns), n_trials);
+sketch_cvx_optbnds = cell(length(rows), length(columns), n_trials);
+sketch_cvx_slvtol = cell(length(rows), length(columns), n_trials);
 
-basis_times = NaN(length(rows), length(columns));
+basis_times = NaN(length(rows), length(columns), n_trials);
 
 polyorder = 6;
+
+nprocesses = 15;
+pool = gcp('nocreate'); % If no pool, do not create new one.
+if isempty(pool)
+    poolsize = 0;
+else
+    poolsize = pool.NumWorkers;
+end
+if poolsize ~= nprocesses
+    if poolsize > 0
+        delete(pool)
+    end
+    parpool(nprocesses);
+end
 
 for i = 1:length(rows)
     n_rows = rows(i);
@@ -42,31 +57,33 @@ for i = 1:length(rows)
             A(idx,:) = D.pdf(0:(n_columns-1));
         end
         
-        % T4 + mono
-        tic;
-        %f = @() trendfilter(A, b, 4, lambda, true, subsample);
-        %t_t4mono = timeit(f);
-        [~, ~, solution_state] = trendfilter(A, b, 4, lambda, true, subsample);
-        t_t4mono = toc;
-        t4mono_times(i, j) = t_t4mono;
-        t4mono_cvx_statuses{i, j} = solution_state{1};
-        t4mono_cvx_optbnds{i, j} = solution_state{2};
-        t4mono_cvx_slvtol{i, j} = solution_state{3};
-        
-        % Basis
-        tic;
-        [~] = polyfilter(A, b, polyorder);
-        t_basis = toc;
-        basis_times(i, j) = t_basis;
-        
-        % Sketch
-        tic;
-        [~,~, solution_state] = filter_sketch(A, b, sketch, 'block', lambda, true, subsample);
-        t_sketch = toc;
-        sketch_times(i, j) = t_sketch;
-        sketch_cvx_statuses{i, j} = solution_state{1};
-        sketch_cvx_optbnds{i, j} = solution_state{2};
-        sketch_cvx_slvtol{i, j} = solution_state{3};
+        parfor k = 1:n_trials
+            % T4 + mono
+            tic;
+            %f = @() trendfilter(A, b, 4, lambda, true, subsample);
+            %t_t4mono = timeit(f);
+            [~, ~, solution_state] = trendfilter(A, b, 4, lambda, true, subsample);
+            t_t4mono = toc;
+            t4mono_times(i, j, k) = t_t4mono;
+            t4mono_cvx_statuses{i, j, k} = solution_state{1};
+            t4mono_cvx_optbnds{i, j, k} = solution_state{2};
+            t4mono_cvx_slvtol{i, j, k} = solution_state{3};
+
+            % Basis
+            tic;
+            [~] = polyfilter(A, b, polyorder);
+            t_basis = toc;
+            basis_times(i, j, k) = t_basis;
+
+            % Sketch
+            tic;
+            [~,~, solution_state] = filter_sketch(A, b, sketch, 'block', lambda, true, subsample);
+            t_sketch = toc;
+            sketch_times(i, j, k) = t_sketch;
+            sketch_cvx_statuses{i, j, k} = solution_state{1};
+            sketch_cvx_optbnds{i, j, k} = solution_state{2};
+            sketch_cvx_slvtol{i, j, k} = solution_state{3};
+        end
     end
 end
 
