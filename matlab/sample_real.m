@@ -5,7 +5,7 @@ git = git.hash(1:6);
 notes = '';
 
 %% Params
-dataset_name = 'parkinson';
+dataset_name = 'dota';
 f = samplerReal(dataset_name);
 n_resamples_per_trial = 100;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
@@ -41,6 +41,8 @@ if poolsize ~= nprocesses
     parpool(nprocesses);
 end
 
+filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
+
 tic;
 parfor i = 1:length(p)
     p_i = p(i);
@@ -65,31 +67,41 @@ end
 b3_time = toc; tic;
 fprintf('B3 sampling time: %f sec \n', b3_time);
 
+%% Compute s_true
 % Compute s_true, at most 50 points
 s_true_n_corrupted_samples = floor(linspace(0, nT, min(50, nT+1)));
 s_true = zeros(length(s_true_n_corrupted_samples), n_trials_per_corruption_level);
 
-parfor i = 1:length(s_true)
-    n_corrupted_samples = s_true_n_corrupted_samples(i);
-    if i == 1
-        n_resamples_this_trial = n_resamples_per_corruption_level;
-    else
-        n_resamples_this_trial = n_trials_per_corruption_level;
+%% Compute very accurate estimate of s_true at p=0
+tic
+parfor i = 1:n_trials_per_corruption_level
+    for j = 1:n_resamples_per_corruption_level
+        [x, y, xtest, ytest] = f.sample_dual(nT, nT, 0, nV);
+        SVMModel = fitcsvm(x, y);
+        yhat = predict(SVMModel, xtest);
+        error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
+        s_true(1, i) = s_true(1, i) + error/n_resamples_per_corruption_level;
     end
-    
+end
+s_true_time = toc;
+fprintf('True error sampling time at p=0: %f sec \n', s_true_time);
+
+save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 's_true_n_corrupted_samples', 'p0', 'p', 'nprocesses', 'b3_time', 's_true_time', 'notes', 'git')
+
+%% Compute s_true at other corruption values
+parfor i = 2:length(s_true)
+    n_corrupted_samples = s_true_n_corrupted_samples(i);
     for j = 1:n_trials_per_corruption_level
-        for k = 1:n_resamples_this_trial
+        for k = 1:n_resamples_per_trial
             [x, y, xtest, ytest] = f.sample_dual(nT-n_corrupted_samples, nT, 0, nV);
             SVMModel = fitcsvm(x, y);
             yhat = predict(SVMModel, xtest);
             error = 1 - sum(strcmp(yhat, ytest))/length(ytest);
-            s_true(i, j) = s_true(i, j)+error/n_resamples_this_trial;
+            s_true(i, j) = s_true(i, j)+error/n_resamples_per_trial;
         end
     end
 end
-
 s_true_time = toc;
-fprintf('True error sampling time: %f sec \n', s_true_time);
+fprintf('Total true error sampling time: %f sec \n', s_true_time);
 
-filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
 save(filename, 'dataset_name', 'n_corruption_levels', 'n_trials_per_corruption_level', 'n_resamples_per_trial', 'n_resamples_per_corruption_level', 'B', 'nT', 'nV', 's_true', 's_true_n_corrupted_samples', 'p0', 'p', 'nprocesses', 'b3_time', 's_true_time', 'notes', 'git')
