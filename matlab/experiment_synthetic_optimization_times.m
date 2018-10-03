@@ -4,7 +4,7 @@ clear, clc, close all
 git = getGitInfo();
 git = git.hash(1:6);
 
-n_trials = 30;
+n_trials = 1;
 rows = [10]; %, 100, 1000];
 columns = floor(logspace(1, 5, 10)); %[10, 100, 1000, 10000, 50000, 100000];
 lambda = 0.1;
@@ -25,19 +25,19 @@ basis_times = NaN(length(rows), length(columns), n_trials);
 
 polyorder = 6;
 
-nprocesses = 15;
-pool = gcp('nocreate'); % If no pool, do not create new one.
-if isempty(pool)
-    poolsize = 0;
-else
-    poolsize = pool.NumWorkers;
-end
-if poolsize ~= nprocesses
-    if poolsize > 0
-        delete(pool)
-    end
-    parpool(nprocesses);
-end
+% nprocesses = 12;
+% pool = gcp('nocreate'); % If no pool, do not create new one.
+% if isempty(pool)
+%     poolsize = 0;
+% else
+%     poolsize = pool.NumWorkers;
+% end
+% if poolsize ~= nprocesses
+%     if poolsize > 0
+%         delete(pool)
+%     end
+%     parpool(nprocesses);
+% end
 
 for i = 1:length(rows)
     n_rows = rows(i);
@@ -46,7 +46,6 @@ for i = 1:length(rows)
     
     for j = 1:length(columns)
         n_columns = columns(j);
-        [n_rows, n_columns]
         sketch = floor(n_columns / sketch_factor);
         
         % Construct A
@@ -57,7 +56,10 @@ for i = 1:length(rows)
             A(idx,:) = D.pdf(0:(n_columns-1));
         end
         
-        parfor k = 1:n_trials
+        for k = 1:n_trials
+            fprintf('Total true error sampling time: %f sec \n', s_true_time);
+
+            [n_rows, n_columns]
             % T4 + mono
             tic;
             %f = @() trendfilter(A, b, 4, lambda, true, subsample);
