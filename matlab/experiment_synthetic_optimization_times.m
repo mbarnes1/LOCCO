@@ -3,6 +3,7 @@ clear, clc, close all
 
 git = getGitInfo();
 git = git.hash(1:6);
+filename = ['cvx_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '.mat'];
 
 n_trials = 1;
 rows = [10]; %, 100, 1000];
@@ -88,7 +89,6 @@ for i = 1:length(rows)
     end
 end
 
-filename = ['cvx_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '.mat'];
 save(filename, 'sketch_times', 'sketch_cvx_statuses', 'sketch_cvx_optbnds', 'sketch_cvx_slvtol', ...
     't4mono_times', 't4mono_cvx_statuses', 't4mono_cvx_optbnds', 't4mono_cvx_slvtol', ...
     'basis_times', 'rows', 'columns', 'git')

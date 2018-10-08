@@ -1,14 +1,14 @@
 clear, clc, close all
 % Synthetic experiments
 %load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
-load('bootstraps/AB_2018-09-25_17-30-28_synthetic_nT100_p00.1_K100.mat')
+%load('bootstraps/AB_2018-09-25_17-30-28_synthetic_nT100_p00.1_K100.mat')
 
-lambda = 0.1;
-lambda_sketch = 0.01;
-sketch_mean = 10;
-sketch_block = 10;
-polyorder = 7;  % order of polynomial basis function
-subsample = 10;
+% lambda = 0.1;
+% lambda_sketch = 0.01;
+% sketch_mean = 10;
+% sketch_block = 10;
+% polyorder = 7;  % order of polynomial basis function
+% subsample = 10;
 
 % Adult (Census) experiments
 %load('AB_2017-03-11_13-21-26.mat');  % Real Adult data 2500
@@ -27,13 +27,39 @@ subsample = 10;
 % lambda_sketch = 0.1;
 % polyorder = 7;
 
+% Parkinson experiments
+load('bootstraps/parkinson/AB_2018-09-29_07-41-54_parkinson_nT100_p00.1_K1000.mat');
+lambda = 10;
+sketch_mean = 6;
+sketch_block = 20;
+lambda_sketch = 0.1;
+polyorder = 4;
+subsample = 1;
+
+% Dota 2
+% load('bootstraps/dota/AB_2018-10-02_21-22-56_62c9b1_dota_nT1000_p00.1_K10000.mat');
+% lambda = 1000;
+% sketch_mean = 6;
+% sketch_block = 20;
+% lambda_sketch = 0.1;
+% polyorder = 2;
+% subsample = 1;
+
 b = mean(B, 2);
 
 %methods = {'mono', 'T2', 'T3', 'T2+mono', 'T3+mono', 'T4+mono', 'Basis', 'Medoid', 'Block', 'True'};
-methods = {'T4+mono', 'Basis', 'True'}; %{'T4+mono', 'Basis', 'Sketch', 'True'};
+methods = {'T4+mono', 'Basis', 'Sketch', 'True'}; %{'T4+mono', 'Basis', 'Sketch', 'True'};
 method_counter = 1;
 [cmap, ~, ~] = brewermap(length(methods), 'Set2');
 f = figure; hold on
+
+%% Compute A
+A = NaN(length(p), nT+1);
+for i = 1:length(p)
+    p_i = p(i);
+    D = makedist('Binomial','N',nT,'p',p_i);
+    A(i,:) = D.pdf(0:nT);
+end
 
 %% Monotonic
 if any(strcmp(methods,'mono'))
@@ -107,11 +133,11 @@ end
 
 %% true
 if any(strcmp(methods, 'True'))
-    plot((0:nT)/nT, mean(s_true, 2), 'Color', 'k', 'LineStyle', '--');
+    plot(linspace(0, 1, length(s_true_n_corrupted_samples)), mean(s_true, 2), 'Color', 'k', 'LineStyle', '--');
 end
 
 %% Final result of full error fit
-xlabel('Dependency Leakage')
+xlabel('Clustering error, p')
 ylabel('Classification Error, e')
 legend(methods)
 set(f, 'units', 'inches', 'pos', [0 0 6 4.5])

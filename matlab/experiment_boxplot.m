@@ -1,10 +1,12 @@
 clear, clc
 % Synthetic experiments
 %load('AB_2017-02-03_14-43-33.mat');  % Synthetic data for known p0
-lambda = 0.1;
-lambda_sketch = 0.01;
-sketch_mean = 10;
-sketch_block = 10;
+% lambda = 0.1;
+% lambda_sketch = 0.01;
+% sketch_mean = 10;
+% sketch_block = 10;
+% polyorder = 7;
+
 % Real experiments
 %load('AB_2017-03-11_13-21-26.mat');  % Real Adult data 2500
 %load('AB_2017-03-17_07-29-51.mat');  % Real Adult data 10000
@@ -12,24 +14,43 @@ sketch_block = 10;
 %sketch_mean = 6;
 %sketch_block = 20;
 %lambda_sketch = 0.1;
+%polyorder = 7;
 % Heart experiments
 %load('AB_2017-03-24_20-22-09.mat');
 %lambda = 10;
+%polyorder = 7;
 
-% Temp:
-load('bootstraps/AB_2018-09-25_17-30-40_synthetic_nT1000_p00.1_K100.mat')
+% Parkinson
+load('bootstraps/parkinson/AB_2018-10-02_21-32-21_62c9b1_parkinson_nT100_p00.1_K10000.mat');
+lambda = 1000;
+sketch_mean = 6;
+sketch_block = 20;
+lambda_sketch = 0.1;
+polyorder = 2;
+subsample = 1;
 
-methods = {'IID', 'LOCO', 'Basis'}; %'T4+mono', 'Basis', 'Sketch'};
+
+% Dota 2
+% load('bootstraps/dota/AB_2018-10-02_21-22-56_62c9b1_dota_nT1000_p00.1_K10000.mat');
+% lambda = 1000;
+% sketch_mean = 6;
+% sketch_block = 20;
+% lambda_sketch = 0.1;
+% polyorder = 2;
+% subsample = 1;
+
+% Note basis = basis6
+methods = {'IID', 'LOCO', 'T4+mono', 'Basis', 'Sketch'}; %'T4+mono', 'Basis', 'Sketch'};
 %methods = {'IID', 'LOCO', 'Mono', 'T2', 'T2+mono', 'T3', 'T3+mono', 'T4+mono', 'Basis', 'Medoid', 'Block', 'Mean'};
 results = NaN(n_trials_per_corruption_level, length(methods));
 
 %% Compute A
-% A = NaN(length(p), nT+1);
-% for i = 1:length(p)
-%     p_i = p(i);
-%     D = makedist('Binomial','N',nT,'p',p_i);
-%     A(i,:) = D.pdf(0:nT);
-% end
+A = NaN(length(p), nT+1);
+for i = 1:length(p)
+    p_i = p(i);
+    D = makedist('Binomial','N',nT,'p',p_i);
+    A(i,:) = D.pdf(0:nT);
+end
 
 %% Run trials
 for trial = 1:n_trials_per_corruption_level
@@ -38,7 +59,12 @@ for trial = 1:n_trials_per_corruption_level
     
     %% IID
     if any(strcmp(methods,'IID'))
-        x_iid = s_true(round(size(s_true,1)/2), trial);
+        if strcmp(dataset_name, 'parkinson') 
+            x_iid = b(find(p > 0.5, 1));  % full s_true not available
+        else
+            x_iid = s_true(round(size(s_true,1)/2), trial);
+        end
+        
         results(trial, method_counter) = x_iid;
         method_counter = method_counter + 1;
     end
@@ -94,40 +120,43 @@ for trial = 1:n_trials_per_corruption_level
     
     %% Regularize 4th derivative, monotonic
     if any(strcmp(methods,'T4+mono'))
-        x_trend4mono = trendfilter(A, b, 4, lambda, true);
+        x_trend4mono = trendfilter(A, b, 4, lambda, true, subsample);
         x_trend4mono = x_trend4mono(1);
         results(trial, method_counter) = x_trend4mono;
         method_counter = method_counter + 1;
     end
     
     %% Basisnomial basis
-    if any(strcmp(methods,'Basis1'))
-        polyorder = 1;
+    if any(strcmp(methods,'Basis'))
         x_poly = polyfilter(A, b, polyorder);
+        x_poly = x_poly(1);
+        results(trial, method_counter) = x_poly;
+        method_counter = method_counter + 1;
+    end
+    
+    if any(strcmp(methods,'Basis1'))
+        x_poly = polyfilter(A, b, 1);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis2'))
-        polyorder = 2;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 2);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis3'))
-        polyorder = 3;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 3);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis4'))
-        polyorder = 4;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 4);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
@@ -135,47 +164,43 @@ for trial = 1:n_trials_per_corruption_level
     
     if any(strcmp(methods,'Basis5'))
         polyorder = 5;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 5);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
-    if or(any(strcmp(methods,'Basis6')), any(strcmp(methods,'Basis')))
+    if any(strcmp(methods,'Basis6'))
         polyorder = 6;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 6);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis7'))
-        polyorder = 7;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 7);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis8'))
-        polyorder = 7;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 8);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis9'))
-        polyorder = 7;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 9);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
     end
     
     if any(strcmp(methods,'Basis10'))
-        polyorder = 7;
-        x_poly = polyfilter(A, b, polyorder);
+        x_poly = polyfilter(A, b, 10);
         x_poly = x_poly(1);
         results(trial, method_counter) = x_poly;
         method_counter = method_counter + 1;
@@ -197,7 +222,7 @@ for trial = 1:n_trials_per_corruption_level
     
     %% Sketching -- mean
     if or(any(strcmp(methods,'Mean')), any(strcmp(methods,'Sketch')))
-        x_sketch_mean = filter_sketch(A, b, sketch_mean, 'mean', lambda_sketch, true);
+        x_sketch_mean = filter_sketch(A, b, sketch_mean, 'mean', lambda_sketch, true, subsample);
         results(trial, method_counter) = x_sketch_mean(1);
         method_counter = method_counter + 1;
     end
