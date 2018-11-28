@@ -7,7 +7,7 @@ notes = '';
 %% Params
 dataset_name = 'dota';
 f = samplerReal(dataset_name);
-n_resamples_per_trial = 100;
+n_resamples_per_trial = 10000;
 n_trials_per_corruption_level = 10;  % each trial is subset of total bootstrap, mostly for convergence plots
 nprocesses = 12;
 n_resamples_per_corruption_level = n_resamples_per_trial*n_trials_per_corruption_level;  % number of bootstrap iterations per corruption level
@@ -41,7 +41,7 @@ if poolsize ~= nprocesses
     parpool(nprocesses);
 end
 
-filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat'];
+filename = ['AB_', datestr(now, 'yyyy-mm-dd_hh-MM-ss'), '_', git, '_', dataset_name, '_nT', num2str(nT), '_p0', num2str(p0), '_K', num2str(n_resamples_per_corruption_level), '.mat']
 
 tic;
 parfor i = 1:length(p)
